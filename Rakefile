@@ -6,12 +6,12 @@ require 'aws-sdk'
 require 'yaml'
 #
 desc "Build Image"
-task :ec2build do
+task :build do
   sh "cd ~/packer/hello_ami/ && packer build hello_ami.json"
 end
 #
 desc "Launch EC2 instances."
-task :ec2launch do
+task :launch do
   config = YAML.load(File.read("config.yml"))
   AWS.config(config)
   AWS.ec2.images.with_tag("Name", config.fetch("image_tag_name")).each do |image|
@@ -43,7 +43,7 @@ task :genspec do
 end
 #
 desc "Terminate Instance"
-task :ec2terminate do
+task :terminate do
   config = YAML.load(File.read("config.yml"))
   AWS.config(config)
   AWS.ec2.instances.with_tag("Name", config.fetch("tag_name")).each do |instance|
