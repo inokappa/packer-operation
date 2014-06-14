@@ -10,6 +10,28 @@
 
 ### git clone
 
+~~~~
+git clone https://github.com/inokappa/packer-operation.git
+~~~~
+
+### config.yml
+
+`config.sample.yml` を参考に各種情報を事前に設定する。
+
+~~~~yaml
+access_key_id: 'AKxxxxxxxxxxxxxxxxxxxxx'
+secret_access_key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+region: 'us-east-1'
+user: "root"
+key: "/pat/to/file.pem"
+instance_type: "t1.micro"
+vpc_subnet: "subnet-xxxxxxxx"
+security_group: "sg-xxxxxxx"
+key_name: "file"
+tag_name: "instance_name"
+image_tag_name: "ami_name"
+~~~~
+
 ### Packer する準備
 
 #### template 作成
