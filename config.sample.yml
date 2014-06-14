@@ -1,0 +1,11 @@
+access_key_id: 'AKxxxxxxxxxxxxxxxxxxxxx'
+secret_access_key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+region: 'us-east-1'
+user: "root"
+key: "/pat/to/file.pem"
+instance_type: "t1.micro"
+vpc_subnet: "subnet-xxxxxxxx"
+security_group: "sg-xxxxxxx"
+key_name: "file"
+tag_name: "instance_name"
+image_tag_name: "ami_name"
