@@ -2,7 +2,15 @@
 
 ## とりあえず
 
- * 一連の `Packer` の操作を `Rake` コマンドで叩けるようにしてみた
+### なにこれ
+
+packer で EC2 AMI を作っていて、色々と面倒な部分を Rakefile に落とし込んでみた。
+
+### 出来ること
+
+- packer を叩いてイメージの build
+- 作成されたインスタンスイメージでインスタンス起動
+- 起動したインスタンスに対して Serverspec を使ってテスト
 
 ***
 
@@ -10,113 +18,132 @@
 
 ### git clone
 
-~~~~
+```sh
 git clone https://github.com/inokappa/packer-operation.git
-~~~~
+```
 
 ### config.yml
 
 `config.sample.yml` を参考に各種情報を事前に設定する。
 
-~~~~yaml
+```yaml
 access_key_id: 'AKxxxxxxxxxxxxxxxxxxxxx'
 secret_access_key: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
 region: 'us-east-1'
 user: "root"
-key: "/pat/to/file.pem"
-instance_type: "t1.micro"
+key_path: "/pat/to/file.pem"
+instance_type: "t2.micro"
 vpc_subnet: "subnet-xxxxxxxx"
 security_group: "sg-xxxxxxx"
 key_name: "file"
 tag_name: "instance_name"
 image_tag_name: "ami_name"
-~~~~
+user_data_path: "userdata.txt"
+```
 
 ### Packer する準備
 
-#### template 作成
+#### template ファイルを作成
 
 適当なディレクトリを作成する。
 
-~~~~
+```sh
 mkdir  ~/path/to
-~~~~
+```
 
 ディレクトリ配下に `Packer` 用の `template` ファイルや `provisioner` する為のファイルを置く。
 
-~~~~
+```sh
 cd  ~/path/to
 vim example.json
-~~~~
-
-#### Rakefile の修正
-
-`template` ファイルの設定場所に合わせた形で以下の部分を修正する。
-
-~~~~
-desc "Build Image"
-task :build do
-  sh "cd ~/path/to/ && packer build example.json"
-end
-~~~
+```
 
 ### Serverspec 用のテンプレートを作っておく
 
 インスタンスをテストする `Serverspec` 用の `spec` ファイルを作っておく。
 
-~~~~
-cd spec_template
+```sh
+cd spec_linux
 vim check_spec.rb
-~~~~
+```
 
-このファイルは `rake genspec` を実行するとインスタンスのホスト名ディレクトリ以下に生成される。
+このファイルは `rake genspec:linux` を実行するとインスタンスのホスト名ディレクトリ以下に生成される。
 
-### task の実行
+```sh
+cd spec_win
+vim check_spec.rb
+```
 
-~~~~
+このファイルは `rake genspec:win` を実行するとインスタンスのホスト名ディレクトリ以下に生成される。
+
+### イメージのビルド
+
+```sh
+PACKER_TEMPLATE_PATH=~/path/to/example.json
 rake build
-~~~~
+```
 
 ***
 
-### task
+## tasks
 
-#### build
+### tasks
+
+~~~~
+rake build          # Build Image
+rake ec2:getpw      # Get logon Password
+rake ec2:launch     # Launch EC2 instances
+rake ec2:terminate  # Terminate Instance
+rake genspec:linux  # Generate Spec File
+rake genspec:win    # Generate Spec File
+~~~~
+
+### build
 
 `packer build`  を実行して `AMI` を生成する。
 
-~~~~
+```sh
+PACKER_TEMPLATE_PATH=~/path/to/example.json
 rake build
-~~~~
+```
 
-#### launch
+### ec2:launch
 
 生成した `AMI` を使ってインスタンスを作成する。
 
-~~~~
+```sh
 rake launch
-~~~~
+```
 
-#### genspec
+### ec2:getpw
+
+Windows Server のパスワードを取得する。
+
+```sh
+rake ec2:getpw
+```
+
+### genspec
 
 作成されたインスタンス用 `Serverspec` の `Spec` ファイルを生成 。
 
-~~~~
-rake genspec
-~~~~
+```sh
+rake genspec:linux
+rake genspec:win
+```
 
-#### spec
+### spec
 
 インスタンスのテスト。
 
-~~~~
+```sh
 rake spec
-~~~~
+```
 
-#### terminate
+### terminate
 
 インスタンスのターミネート。
 
-~~~~
-rake terminate
-~~~~
+```sh
+rake ec2:terminate
+```

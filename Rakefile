@@ -19,7 +19,7 @@ ec2 = Aws::EC2::Client.new(
 #
 desc "Build Image"
 task :build do
-  sh "PACKER_LOG=1 packer build template.json"
+  sh "PACKER_LOG=1 packer build #{ENV["PACKER_TEMPLATE_PATH"]}"
 end
 #
 namespace :ec2 do
@@ -99,15 +99,14 @@ namespace :genspec do
     ]
   })
 
-  server = instance.reservations[0].instances[0].public_dns_name
   desc "Generate Spec File."
   task :linux do
     sh "rm -rf ./spec/ec*"
     org = "./spec_linux"
     #
-    # server = instance.reservations[0].instances[0].public_dns_name
+    server = instance.reservations[0].instances[0].public_dns_name
     FileUtils.cp_r("spec_helpers/spec_helper.rb.linux", spec_helper) unless FileTest.exist?(spec_helper)
-    puts "Created " + spc "/" + "/spec_helper.rb"
+    puts "Created " + spc + "/" + "/spec_helper.rb"
     FileUtils.cp_r(org, spc + "/" + server) unless FileTest.exist?(server)
     puts "Created " + spc + "/" + server + "/check_spec.rb"
   end
@@ -117,11 +116,11 @@ namespace :genspec do
     sh "rm -rf ./spec/ec*"
     org = "./spec_win"
     #
-    # server = instance.reservations[0].instances[0].public_dns_name
+    server = instance.reservations[0].instances[0].public_dns_name
     result = ERB.new(File.read("spec_helpers/spec_helper.rb.win")).result(binding)
     File.open(spec_helper, "w") do |file|
       file.puts result
-      puts "Created " + spc "/" + "/spec_helper.rb"
+      puts "Created " + spc + "/" + "/spec_helper.rb"
     end
     FileUtils.cp_r(org, spc + "/" + server) unless FileTest.exist?(server)
     puts "Created " + spc + "/" + server + "/check_spec.rb"
